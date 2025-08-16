@@ -16,19 +16,21 @@ import java.util.UUID;
 public class Presence {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue
     private UUID id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(nullable = false)
-    private boolean inFlat;
+    private boolean inFlat; // boolean field
 
-    @Column(nullable = false)
     private LocalDateTime entryTime;
-
     private LocalDateTime exitTime;
 
+    // Calculate hours automatically
+    public double getTotalHours() {
+        if (entryTime == null) return 0;
+        LocalDateTime endTime = exitTime != null ? exitTime : LocalDateTime.now();
+        return java.time.Duration.between(entryTime, endTime).toMinutes() / 60.0;
+    }
 }

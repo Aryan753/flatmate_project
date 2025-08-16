@@ -1,8 +1,12 @@
 package com.flat.mate.controller;
 
 import com.flat.mate.dto.ApiResponse;
+import com.flat.mate.dto.LocationRequest;
 import com.flat.mate.dto.PresenceDTO;
+import com.flat.mate.dto.UserDTO;
+import com.flat.mate.model.User;
 import com.flat.mate.service.PresenceService;
+import com.flat.mate.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +20,15 @@ import java.util.UUID;
 public class PresenceController {
 
     private final PresenceService presenceService;
+    private UserService userService;
+
+    @PostMapping("/update-location")
+    public ResponseEntity<PresenceDTO> updateLocation(@RequestBody LocationRequest request) {
+        UserDTO user = userService.getUserById(request.getUserId());
+        PresenceDTO updated = presenceService.updatePresenceWithLocation(user, request.getLatitude(), request.getLongitude());
+        return ResponseEntity.ok(updated);
+    }
+
 
     @PostMapping
     public ResponseEntity<ApiResponse<PresenceDTO>> updatePresence(@RequestBody PresenceDTO presenceDTO) {

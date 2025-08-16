@@ -9,7 +9,9 @@ import com.flat.mate.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -18,6 +20,7 @@ public class BillService {
 
     private final BillRepository billRepository;
     private final UserRepository userRepository;
+    private final PresenceService presenceService; // inject via constructor
 
     public BillDTO createBill(BillDTO dto) {
         List<User> participants = dto.getParticipantIds().stream()
@@ -54,5 +57,24 @@ public class BillService {
                 participantIds,
                 bill.getSplitMethod()
         );
+    }
+
+    public Map<User, Double> splitBill(double totalBill, List<User> users) {
+        Map<User, Double> userShare = new HashMap<>();
+
+        // Calculate total hours of all users
+        double totalHours = users.stream()
+                .mapToDouble(presenceService::getTotalHoursForUser)
+                .sum();
+
+        if (totalHours == 0) totalHours = 1; // prevent division by zero
+
+        for (User user : users) {
+            double userHours = presenceService.getTotalHoursForUser(user);
+            double share = totalBill * (userHours / totalHours);
+            userShare.put(user, share);
+        }
+
+        return userShare;
     }
 }
